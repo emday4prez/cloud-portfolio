@@ -1,8 +1,21 @@
 using Scalar.AspNetCore;
+using CloudPortfolio.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// AZ-204: Register Cosmos Client as Singleton (recommended for performance)
+builder.Services.AddSingleton<ICosmosService>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration["CosmosDb:ConnectionString"];
+    var databaseName = configuration["CosmosDb:DatabaseName"];
+    var containerName = configuration["CosmosDb:ContainerName"];
+
+    var client = new Microsoft.Azure.Cosmos.CosmosClient(connectionString);
+    return new CosmosService(client, databaseName, containerName);
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
